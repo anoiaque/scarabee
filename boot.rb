@@ -1,4 +1,4 @@
-lib = File.expand_path('../../lib', __FILE__)
+lib = File.expand_path('../lib', __FILE__)
 
 $LOAD_PATH.unshift(lib)
 ENV['BUNDLE_GEMFILE'] = File.expand_path('../Gemfile', __FILE__)
