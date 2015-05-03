@@ -109,4 +109,18 @@ class Scarabee::CommandTest < Minitest::Test
     assert_equal URL, e.url
     assert e.kind.is_a?(RuntimeError)
   end
+  
+  def test_pick_table_as_keys_values
+    url = "http://www.leboncoin.fr/ventes_immobilieres/794261408.htm?ca=12_s"
+    
+    yo = Scarabee.scraper do |url|
+      open url
+      pick_table 'div.criterias > table', as: :criteres, key: 'th', value: './/td/*[not(self::script)]|.//td/text()'
+    end
+
+    entries = yo.run(url: url)
+    
+    assert_equal ["Type de bien", "Pièces", "Surface", "GES", "Classe énergie"], entries[0].keys
+    assert_equal ["Maison", "6", "92 m2", "E (de 36 à 55)", "D (de 151 à 230)"], entries[0].values
+  end
 end

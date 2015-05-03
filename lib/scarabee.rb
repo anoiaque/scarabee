@@ -25,6 +25,11 @@ module Scarabee
       @@text ||= ->(node) { node.text.gsub(/\n|\t/, '').strip.gsub(/\s+/, ' ')  }
     end
     
+    def key
+      @@key ||= ->(node) { text.(node).gsub(/:/, '').strip  }
+      
+    end
+    
     def href
       @@href ||= ->(node) { node.attributes['href'].value }
     end
@@ -55,14 +60,28 @@ module Scarabee
     
     def pick xpath, as: :key, format: nil
       nodes = @page.search(xpath)
-      
+
       nodes.each_with_index { |node, index|
         @entries[index] ||= Hash.new
         @entries[index][as] = Formatter[format].(node)
+        @entries[index][:url] = @page.uri.to_s
       }
       
     rescue => e
       @errors << Scarabee::Exception.new(:pick, @page.uri.to_s, e)
+    end
+    
+    def pick_table xpath, as: :key, key: :xpath, value: :xpath
+      nodes = @page.search(xpath)
+        
+      nodes.each_with_index { |node, index|  
+        node.search('tr').each{ |tr|  
+          k = Formatter[:key].(tr.search(key))
+        
+          @entries[index] ||= Hash.new
+          @entries[index][k] = Formatter[:text].(tr.search(value))
+        }
+      }
     end
     
     def open url
